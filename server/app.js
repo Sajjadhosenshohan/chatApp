@@ -4,6 +4,7 @@ const cors = require("cors");
 const { Server } = require('socket.io');
 const Connection = require('./db.js');
 const Chat = require('./models/Chat.js');
+const User = require('./models/User.js');
 
 const PORT = process.env.PORT || 8080;
 const app = express();
@@ -68,6 +69,28 @@ io.on("connection", (socket) => {
         console.log("disconnect");
     });
 });
+
+app.post('/api/users', async (req, res) => {
+    try {
+        const { username, role , avatar} = req.body;
+        console.log(req.body)
+        const newUser = new User({ username, role, avatar });
+        await newUser.save();
+        res.status(201).json(newUser);
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+});
+app.get('/api/users', async (req, res) => {
+    try {
+        const getAlluser = await User.find({role: "normal-user"})
+
+        res.status(201).json(getAlluser);
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+});
+
 
 server.listen(PORT, () => {
     console.log("running on port 8080");

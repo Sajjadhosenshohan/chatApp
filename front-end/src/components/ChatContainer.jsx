@@ -4,75 +4,108 @@ import ChatLists from "./ChatLists";
 import InputText from "./InputText";
 import UserLogin from "./UserLogin";
 import socketIOClient from "socket.io-client";
-import '../style.css'
+import '../style.css';
 
 const ChatContainer = () => {
-  const [user, setUser] = useState(localStorage.getItem("user"));
-  const [receiver, setReceiver] = useState(localStorage.getItem("receiver"));
+    const [userInfo, setUserInfo] = useState(JSON.parse(localStorage.getItem("userInfo")));
+    const [receiver, setReceiver] = useState(localStorage.getItem("receiver"));
+    const [normalUsers, setNormalUsers] = useState([]); // Store normal users
+    const socketio = socketIOClient("http://localhost:8080");
+    const [chats, setChats] = useState([]);
 
-  const socketio = socketIOClient("http://localhost:8080");
-  const [chats, setChats] = useState([]);
+    useEffect(() => {
+        const getData = async () => {
+            try {
+                // Post request to create a new user
+                const response = await fetch('http://localhost:8080/api/users', {
+                    method: 'GET',
+                    // headers: {
+                    //     'Content-Type': 'application/json'
+                    // },
+                    // body: JSON.stringify(userInfo)
+                });
 
-  // Fetch chats from DB on initial load or after refresh
-  useEffect(() => {
-    if (user && receiver) {
-      socketio.emit("joinRoom", { sender: user, receiver }); // Emit joinRoom event to fetch chat history
-    }
+                if (response.ok) {
+                    const createdUser = await response.json();
+                    console.log('User found:', createdUser);
+                    setNormalUsers(createdUser)
+                } else {
+                    console.log('Failed to create user');
+                }
+            } catch (error) {
+                console.log('Error:', error);
+            }
+        }
+        getData()
+    }, [])
 
-    socketio.on("chat", (fetchedChats) => {
-      setChats(fetchedChats); // Set chat history after fetching from DB
-    });
+    useEffect(() => {
+        if (userInfo && receiver) {
+            socketio.emit("joinRoom", { sender: userInfo.username, receiver });
+        }
 
-    socketio.on("message", (msg) => {
-      setChats((prevChats) => [...prevChats, msg]); // Add new message
-    });
+        socketio.on("chat", (fetchedChats) => {
+            setChats(fetchedChats);
+        });
 
-    return () => {
-      socketio.off("chat");
-      socketio.off("message");
+        socketio.on("message", (msg) => {
+            setChats((prevChats) => [...prevChats, msg]);
+        });
+
+        return () => {
+            socketio.off("chat");
+            socketio.off("message");
+        };
+    }, [userInfo, receiver]);
+
+    const addMessage = (chat) => {
+        const newChat = {
+            senderUsername: userInfo.username,
+            receiverUsername: receiver,
+            message: chat.text, // Use the message text
+            avatar: userInfo.avatar,
+        };
+        socketio.emit("newMessage", newChat);
     };
-  }, [user, receiver]);
 
-  const addMessage = (chat) => {
-    const newChat = {
-      senderUsername: user,
-      receiverUsername: receiver,
-      message: chat,
-      avatar: localStorage.getItem("avatar"),
+    const Logout = () => {
+        localStorage.removeItem("userInfo");
+        localStorage.removeItem("receiver");
+        setUserInfo(null);
+        setReceiver("");
     };
-    socketio.emit("newMessage", newChat); // Emit new message to the room
-  };
 
-  const Logout = () => {
-    localStorage.removeItem("user");
-    localStorage.removeItem("receiver");
-    localStorage.removeItem("avatar");
-    setUser("");
-    setReceiver("");
-  };
-
-  return (
-    <div>
-      {user ? (
-        <div className="home">
-          <div className="chats_header">
-            <h4>Sender: {user}</h4>
-            <h4>Receiver: {receiver}</h4>
-            <p>
-              <FaYoutube className="chats_icon" /> Code With Yousaf
-            </p>
-            <p className="chats_logout" onClick={Logout}>
-              <strong>Logout</strong>
-            </p>
-          </div>
-          <ChatLists chats={chats} />
-          <InputText addMessage={addMessage} />
+    return (
+        <div>
+            {userInfo ? (
+                <div className="home">
+                    <div className="chats_header">
+                        <h4>Sender: {userInfo.username}</h4>
+                        <h4>Receiver: {receiver}</h4>
+                        <p>
+                            <FaYoutube className="chats_icon" /> Code With Yousaf
+                        </p>
+                        <p className="chats_logout" onClick={Logout}>
+                            <strong>Logout</strong>
+                        </p>
+                    </div>
+                    <div className="sidebar">
+                        {/* Sidebar for normal users */}
+                        {normalUsers.map((user) => (
+                            <div key={user.id} onClick={() => setReceiver(user.username)}>
+                                <img src={user.avatar} alt={user.username} />
+                                <p>{user.username}</p>
+                            </div>
+                        ))}
+                    </div>
+                    <ChatLists chats={chats} />
+                    <InputText addMessage={addMessage} />
+                </div>
+            ) : (
+                <UserLogin setUser={setUserInfo} setReceiver={setReceiver} />
+            )}
         </div>
-      ) : (
-        <UserLogin setUser={setUser} setReceiver={setReceiver} />
-      )}
-    </div>
-  );
+    );
 };
 
 export default ChatContainer;

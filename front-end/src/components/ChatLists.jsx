@@ -9,12 +9,13 @@ const ChatLists = ({ chats }) => {
             <div className='chat_sender'>
                 <img src={avatar} alt="" />
                 <p>
-                    <strong>{username}</strong> <br />
+                    <strong>{username} </strong> <br />
                     {message}
                 </p>
             </div>
         );
     }
+    
 
     function ReceiverChat({ message, username, avatar }) {
         return (
