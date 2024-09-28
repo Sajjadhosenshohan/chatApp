@@ -8,5 +8,5 @@ const chatSchema = new mongoose.Schema({
     timestamp: {type: Date, default: Date.now}
 })
 
-const Chat = mongoose.model('my-message', chatSchema)
+const Chat = mongoose.model('chatMe', chatSchema)
 module.exports = Chat

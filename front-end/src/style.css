@@ -28,6 +28,7 @@
 .login_form {
     display: flex;
     justify-content: center;
+    gap: 5px;
 }
 
 .login_form input {
@@ -78,6 +79,7 @@
     height: 75vh;
     overflow: scroll;
     overflow-x: hidden;
+    border: 2px solid red;
 }
 .chat_sender {
     display: flex;
@@ -133,11 +135,38 @@
     cursor: pointer;
 }
 
-.inputtext_container .inputField {
+.inputtext_container  .inputField{
     width: 60%;
     height: 50px;
     border-radius: 10px;
     border-width: 0;
     padding: 10px;
     font-size: 18px,
+}
+
+.sidebar {
+    border: 2px solid yellowgreen;
+    width: 20%;
+    float: left;
+    background-color: #f1f1f1;
+    padding: 10px;
+    height: 75vh;
+    overflow-y: scroll;
+}
+
+.sidebar div {
+    border-radius: 50%;
+    border: 2px solid red;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    margin-bottom: 10px;
+}
+
+.sidebar img {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 2px solid red;
+    margin-right: 10px;
 }

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import '../style.css'
 
 const InputText = ({ addMessage }) => {
@@ -6,7 +6,7 @@ const InputText = ({ addMessage }) => {
 
     const handleSend = () => {
         if (text.trim() !== '') {
-            addMessage(text); // Send the message
+            addMessage({ text}); // Send the message along with userId
             setText(''); // Clear the input field
         }
     };
@@ -14,7 +14,7 @@ const InputText = ({ addMessage }) => {
     return (
         <div className="inputtext_container">
             <input
-            className='inputField'
+                className='inputField'
                 type='text'
                 value={text}
                 placeholder='Type a message...'
